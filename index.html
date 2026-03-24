@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Singapore Income Tax Planner — YA2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1117;--bg2:#131920;--bg3:#1a2330;--bg4:#1f2b3a;
+  --border:#2a3a4e;--border2:#354d66;
+  --gold:#e8b84b;--gold2:#f5d07a;--gold-dim:#a07f2e;
+  --teal:#3ecfb2;--teal-dim:#1a6657;
+  --coral:#ff7c5c;--blue:#5b8dee;
+  --green:#4caf82;--green-dim:#1a4a34;
+  --text:#e8edf3;--text2:#8fa3b8;--text3:#566a80;
+  --font-display:'Playfair Display',serif;
+  --font-mono:'DM Mono',monospace;
+  --font-body:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow-x:hidden}
+.grain{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* HEADER */
+.header{position:relative;z-index:1;padding:3.5rem 2rem 2.5rem;text-align:center;border-bottom:1px solid var(--border)}
+.eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:1rem}
+.header h1{font-family:var(--font-display);font-size:clamp(2.2rem,5vw,3.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-bottom:1rem}
+.header h1 span{color:var(--gold)}
+.header-desc{font-size:14px;color:var(--text2);max-width:520px;margin:0 auto 1.75rem;line-height:1.7}
+.pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.pill{font-family:var(--font-mono);font-size:11px;padding:5px 14px;border:1px solid var(--border2);border-radius:20px;color:var(--text2);letter-spacing:.06em}
+.pill.on{border-color:var(--gold-dim);color:var(--gold);background:rgba(232,184,75,.07)}
+
+/* LAYOUT */
+.main{position:relative;z-index:1;max-width:1140px;margin:0 auto;padding:2rem 1.5rem 5rem}
+.layout{display:grid;grid-template-columns:360px 1fr;gap:1.5rem;align-items:start}
+
+/* TABS (left panel top) */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:0}
+.tab{padding:10px 16px;font-family:var(--font-mono);font-size:11px;letter-spacing:.07em;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;text-transform:uppercase;transition:color .15s}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tpage{display:none}.tpage.active{display:block}
+
+/* PANEL */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.panel-hdr{padding:1.1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem}
+.panel-icon{width:32px;height:32px;border-radius:8px;background:rgba(232,184,75,.1);border:1px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.panel-icon svg{width:15px;height:15px;stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ptitle{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text)}
+.psub{font-size:11px;color:var(--text3);margin-top:1px}
+.panel-body{padding:1.25rem 1.5rem}
+
+/* FIELDS */
+.sec-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin:1.25rem 0 .6rem;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.sec-label:first-child{margin-top:0}
+
+.irow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(42,58,78,.5)}
+.irow:last-child{border-bottom:none}
+.irow-label{font-size:13px;color:var(--text)}
+.irow-sub{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4}
+.irow-sub.gold{color:rgba(232,184,75,.7)}
+
+.iw{display:flex;align-items:center;border:1px solid var(--border);border-radius:8px;background:var(--bg3);overflow:hidden;width:140px;transition:border-color .2s}
+.iw:focus-within{border-color:var(--gold-dim)}
+.ipre{padding:0 8px;font-size:12px;color:var(--text3);background:var(--bg4);border-right:1px solid var(--border);height:32px;display:flex;align-items:center;font-family:var(--font-mono)}
+.iw input,.iw select{border:none;background:transparent;padding:0 8px;height:32px;font-size:13px;color:var(--text);width:100%;outline:none;font-family:var(--font-mono)}
+.iw select{cursor:pointer}
+.iw input::-webkit-inner-spin-button{-webkit-appearance:none}
+
+/* RELIEF ROWS */
+.rrow{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(42,58,78,.5)}
+.rrow:last-child{border-bottom:none}
+.rlabel{font-size:12px;color:var(--text)}
+.rhint{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;font-family:var(--font-mono)}
+.sbadge{font-family:var(--font-mono);font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;white-space:nowrap;text-align:center;min-width:54px}
+.sbadge.none{color:var(--text3);background:transparent}
+.sbadge.save{background:rgba(76,175,130,.12);color:var(--green);border:1px solid rgba(76,175,130,.25)}
+.sbadge.maxed{background:rgba(232,184,75,.1);color:var(--gold);border:1px solid var(--gold-dim)}
+
+/* CAP BAR */
+.cap-meta{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-bottom:5px}
+.cap-val{color:var(--blue)}
+.cap-val.warn{color:var(--gold)}.cap-val.over{color:var(--coral)}
+.cap-track{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-bottom:.75rem}
+.cap-fill{height:100%;border-radius:2px;background:var(--blue);transition:width .3s}
+.cap-fill.warn{background:var(--gold)}.cap-fill.over{background:var(--coral)}
+
+/* RIGHT */
+.right{display:flex;flex-direction:column;gap:1.25rem}
+
+.metrics-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mcard{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;position:relative;overflow:hidden}
+.mcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.mcard.gold::before{background:var(--gold)}
+.mcard.teal::before{background:var(--teal)}
+.mcard.blue::before{background:var(--blue)}
+.mlabel{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:.5rem}
+.mval{font-family:var(--font-mono);font-size:1.5rem;font-weight:500;line-height:1;margin-bottom:.3rem}
+.mcard.gold .mval{color:var(--gold)}
+.mcard.teal .mval{color:var(--teal)}
+.mcard.blue .mval{color:var(--blue)}
+.msub{font-size:11px;color:var(--text3)}
+
+/* ANALYSIS PANEL */
+.apanel{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.aphdr{padding:1.1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
+.aptitle{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text)}
+.apsub{font-size:11px;color:var(--text3);margin-top:3px}
+.abadge{font-family:var(--font-mono);font-size:10px;padding:3px 10px;background:rgba(232,184,75,.1);border:1px solid var(--gold-dim);border-radius:20px;color:var(--gold);letter-spacing:.06em}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.acol{padding:1.25rem 1.5rem}
+.acol:first-child{border-right:1px solid var(--border)}
+.col-head{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.9rem;display:flex;align-items:center;gap:6px}
+.col-head::before{content:'';width:14px;height:1px;background:var(--border2)}
+
+.drow{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(42,58,78,.4)}
+.drow:last-child{border-bottom:none}
+.dlabel{font-size:12px;color:var(--text2)}
+.dval{font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--text)}
+.dval.gold{color:var(--gold)}.dval.teal{color:var(--teal)}.dval.green{color:var(--green)}
+
+.bcard{padding:11px 13px;border-radius:8px;margin-bottom:8px;border:1px solid transparent}
+.bcard:last-child{margin-bottom:0}
+.bcard.cf{background:rgba(62,207,178,.05);border-color:rgba(62,207,178,.15)}
+.bcard.ri{background:rgba(232,184,75,.05);border-color:rgba(232,184,75,.15)}
+.btag{font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.bcard.cf .btag{color:var(--teal)}.bcard.ri .btag{color:var(--gold)}
+.btext{font-size:11px;color:var(--text2);line-height:1.55}
+
+/* BRACKET TABLE */
+.btable-panel{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.btable-hdr{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.btable-title{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text)}
+.eff-row{display:flex;align-items:center;gap:12px}
+.eff-label{font-family:var(--font-mono);font-size:11px;color:var(--text3)}
+.eff-val{font-family:var(--font-mono);font-size:14px;font-weight:500;color:var(--gold)}
+.eff-track{width:80px;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.eff-fill{height:100%;border-radius:2px;background:var(--gold);transition:width .3s}
+.wrap-overflow{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{border-bottom:1px solid var(--border)}
+thead th{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:9px 16px;text-align:right;white-space:nowrap;font-weight:400}
+thead th:first-child{text-align:left}
+tbody tr{border-bottom:1px solid rgba(42,58,78,.35);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tbody tr.active-bracket{background:rgba(232,184,75,.06)}
+td{padding:8px 16px;text-align:right;font-family:var(--font-mono);color:var(--text2);font-size:12px}
+td:first-child{text-align:left;color:var(--text3)}
+td.g{color:var(--gold)}td.t{color:var(--teal)}
+.tip-bar{padding:.75rem 1.5rem;border-top:1px solid var(--border);font-size:12px;color:var(--text2);line-height:1.5;border-left:3px solid var(--blue);background:rgba(91,141,238,.04)}
+
+/* CPF + NR tab panels */
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1rem}
+.field-sm{display:flex;flex-direction:column;gap:4px}
+.field-sm label{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.field-sm .iw{width:100%}
+.nr-seg{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content;margin-bottom:1.25rem}
+.nr-btn{padding:7px 16px;font-family:var(--font-mono);font-size:11px;cursor:pointer;border:none;background:transparent;color:var(--text3);letter-spacing:.05em;transition:all .15s}
+.nr-btn.on{background:var(--gold);color:#0d1117;font-weight:500}
+
+/* EXPORT */
+.ebtn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;margin-right:8px;margin-top:.75rem;font-family:var(--font-body);transition:all .15s}
+.ebtn-out{border:1px solid var(--border2);background:var(--bg3);color:var(--text)}.ebtn-out:hover{background:var(--bg4)}
+.ebtn-gold{border:1px solid var(--gold-dim);background:rgba(232,184,75,.1);color:var(--gold)}.ebtn-gold:hover{background:rgba(232,184,75,.18)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fi{animation:fadeUp .4s ease both}
+.fi1{animation-delay:.04s}.fi2{animation-delay:.08s}.fi3{animation-delay:.12s}.fi4{animation-delay:.16s}.fi5{animation-delay:.2s}
+
+.footer{position:relative;z-index:1;text-align:center;font-size:11px;color:var(--text3);padding:1.5rem;border-top:1px solid var(--border);font-family:var(--font-mono)}
+.footer a{color:var(--gold);text-decoration:none}
+
+@media(max-width:960px){.layout{grid-template-columns:1fr}.metrics-row{grid-template-columns:1fr 1fr 1fr}.two-col{grid-template-columns:1fr}}
+@media(max-width:560px){.metrics-row{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<div class="header">
+  <div class="eyebrow">Year of Assessment 2026</div>
+  <h1>Singapore Income<br><span>Tax Planner</span></h1>
+  <p class="header-desc">Calculate your YA2026 income tax with live relief optimisation, CPF computations, non-resident rates, and PDF export.</p>
+  <div class="pills">
+    <span class="pill on">Tax Residents</span>
+    <span class="pill on">Relief Optimiser</span>
+    <span class="pill on">CPF Calculator</span>
+    <span class="pill on">Non-Resident</span>
+  </div>
+</div>
+
+<div class="main">
+<div class="layout">
+
+  <!-- LEFT PANEL -->
+  <div class="fi fi1">
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab active" onclick="switchLeft('calc',this)">Calculator</button>
+        <button class="tab" onclick="switchLeft('cpf',this)">CPF</button>
+        <button class="tab" onclick="switchLeft('nonres',this)">Non-resident</button>
+        <button class="tab" onclick="switchLeft('export',this)">Export</button>
+      </div>
+
+      <!-- CALC TAB -->
+      <div id="lt-calc" class="tpage active">
+        <div class="panel-hdr">
+          <div class="panel-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+          <div><div class="ptitle">Income & Reliefs</div><div class="psub">Enter amounts in SGD</div></div>
+        </div>
+        <div class="panel-body">
+
+          <div class="sec-label">About you</div>
+          <div class="irow">
+            <div>
+              <div class="irow-label">Your age</div>
+              <div class="irow-sub">Auto-fills earned income relief</div>
+            </div>
+            <div class="iw"><input type="number" id="age" value="" min="1" max="120" placeholder="e.g. 35" style="padding-left:10px" oninput="applyEarnedRelief()"></div>
+          </div>
+          <div class="irow">
+            <div>
+              <div class="irow-label">Gender</div>
+              <div class="irow-sub">Unlocks working mother&#39;s child relief</div>
+            </div>
+            <div class="iw"><select id="gender" onchange="applyGenderLogic()" style="padding-left:10px">
+              <option value="">Select</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select></div>
+          </div>
+          <div id="kids-section" style="display:none">
+            <div class="irow">
+              <div>
+                <div class="irow-label">Number of qualifying children</div>
+                <div class="irow-sub">Each child&#39;s birth date affects WMCR amount</div>
+              </div>
+              <div class="iw"><input type="number" id="num-kids" value="0" min="0" max="10" style="padding-left:10px" oninput="buildKidsForm()"></div>
+            </div>
+            <div id="kids-form"></div>
+            <div style="padding:8px 10px;background:rgba(232,184,75,.07);border:1px solid var(--gold-dim);border-radius:8px;font-size:11px;color:var(--text2);line-height:1.6;font-family:var(--font-mono);margin:6px 0 8px" id="wmcr-note">Enter number of children above to continue.</div>
+          </div>
+          <div class="sec-label">Income</div>
+          <div class="irow">
+            <div><div class="irow-label">Employment income</div></div>
+            <div class="iw"><span class="ipre">S$</span><input type="number" id="employment" value="0" min="0" oninput="applyWMCR()"></div>
+          </div>
+          <div class="irow">
+            <div><div class="irow-label" style="color:var(--text2)">Employment expenses</div></div>
+            <div class="iw"><span class="ipre">S$</span><input type="number" id="expenses" value="0" min="0" oninput="calc()"></div>
+          </div>
+          <div class="irow">
+            <div><div class="irow-label">Trade / business income</div></div>
+            <div class="iw"><span class="ipre">S$</span><input type="number" id="trade" value="0" min="0" oninput="calc()"></div>
+          </div>
+          <div class="irow">
+            <div><div class="irow-label">Dividends</div></div>
+            <div class="iw"><span class="ipre">S$</span><input type="number" id="dividends" value="0" min="0" oninput="calc()"></div>
+          </div>
+          <div class="irow">
+            <div><div class="irow-label">Interest</div></div>
+            <div class="iw"><span class="ipre">S$</span><input type="number" id="interest" value="0" min="0" oninput="calc()"></div>
+          </div>
+          <div class="irow">
+            <div><div class="irow-label">Rental income</div></div>
+            <div class="iw"><span class="ipre">S$</span><input type="number" id="rental" value="0" min="0" oninput="calc()"></div>
+          </div>
+          <div class="irow">
+            <div><div class="irow-label">Other income</div></div>
+            <div class="iw"><span class="ipre">S$</span><input type="number" id="other" value="0" min="0" oninput="calc()"></div>
+          </div>
+          <div class="irow">
+            <div>
+              <div class="irow-label">Approved donations</div>
+              <div class="irow-sub gold">2.5× deduction · saves <span id="don-save">S$0</span></div>
+            </div>
+            <div class="iw"><span class="ipre">S$</span><input type="number" id="donations" value="0" min="0" oninput="calc()"></div>
+          </div>
+
+          <div class="sec-label" style="margin-top:1.25rem">
+            <span>Personal reliefs</span>
+            <span id="cap-val-label" class="cap-val" style="font-size:10px;font-weight:500">S$0 / S$80k</span>
+          </div>
+          <div class="cap-meta"><span>Relief cap utilisation</span><span id="cap-pct-label">0%</span></div>
+          <div class="cap-track"><div class="cap-fill" id="cap-fill" style="width:0%"></div></div>
+
+          <div id="reliefs-section"></div>
+
+          <div class="sec-label" style="margin-top:1.25rem">Rebates</div>
+          <div class="irow">
+            <div><div class="irow-label">Parenthood tax rebate</div><div class="irow-sub">Applied against gross tax</div></div>
+            <div class="iw"><span class="ipre">S$</span><input type="number" id="ptr" value="0" min="0" oninput="calc()"></div>
+          </div>
+          <div class="irow">
+            <div><div class="irow-label">Tax rebate</div><div class="irow-sub gold">YA2026: S$200 for all residents</div></div>
+            <div class="iw"><span class="ipre">S$</span><input type="number" id="rebate" value="200" min="0" oninput="calc()"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CPF TAB -->
+      <div id="lt-cpf" class="tpage">
+        <div class="panel-hdr">
+          <div class="panel-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+          <div><div class="ptitle">CPF Contributions</div><div class="psub">Rates for SC and PRs</div></div>
+        </div>
+        <div class="panel-body">
+          <div class="grid3">
+            <div class="field-sm"><label>Monthly salary</label><div class="iw"><span class="ipre">S$</span><input type="number" id="cpf-salary" value="0" min="0" oninput="calcCPF()"></div></div>
+            <div class="field-sm"><label>Age group</label><div class="iw"><select id="cpf-age" onchange="calcCPF()"><option value="35">≤35</option><option value="45">36–45</option><option value="50">46–50</option><option value="55">51–55</option><option value="60">56–60</option><option value="65">61–65</option><option value="70">66–70</option><option value="99">>70</option></select></div></div>
+            <div class="field-sm"><label>Status</label><div class="iw"><select id="cpf-citizen" onchange="calcCPF()"><option value="sc">SC</option><option value="pr3">PR 3rd yr+</option><option value="pr2">PR 2nd yr</option><option value="pr1">PR 1st yr</option></select></div></div>
+          </div>
+          <div style="margin-top:1rem">
+            <div class="drow"><span class="dlabel">Employee rate</span><span class="dval gold" id="cpf-ee-r">20%</span></div>
+            <div class="drow"><span class="dlabel">Employer rate</span><span class="dval" id="cpf-er-r">17%</span></div>
+            <div class="drow"><span class="dlabel">Monthly employee contribution</span><span class="dval gold" id="cpf-ee-mo">S$0</span></div>
+            <div class="drow"><span class="dlabel">Monthly employer contribution</span><span class="dval" id="cpf-er-mo">S$0</span></div>
+            <div class="drow"><span class="dlabel">Annual employee contribution</span><span class="dval teal" id="cpf-ann">S$0</span></div>
+          </div>
+          <div style="margin-top:1rem;padding:.75rem 1rem;background:rgba(232,184,75,.07);border:1px solid var(--gold-dim);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.6" id="cpf-tip">
+            OW ceiling: S$7,400/month. Enter the annual employee contribution as CPF relief in the Calculator tab.
+          </div>
+        </div>
+      </div>
+
+      <!-- NON-RESIDENT TAB -->
+      <div id="lt-nonres" class="tpage">
+        <div class="panel-hdr">
+          <div class="panel-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg></div>
+          <div><div class="ptitle">Non-Resident Tax</div><div class="psub">Flat rates, no personal reliefs</div></div>
+        </div>
+        <div class="panel-body">
+          <div class="nr-seg">
+            <button class="nr-btn on" id="nr-emp-btn" onclick="setNR('employment')">Employment</button>
+            <button class="nr-btn" id="nr-dir-btn" onclick="setNR('director')">Director</button>
+            <button class="nr-btn" id="nr-oth-btn" onclick="setNR('other')">Other</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+            <div class="field-sm"><label>Gross income</label><div class="iw"><span class="ipre">S$</span><input type="number" id="nr-income" value="0" min="0" oninput="calcNR()"></div></div>
+            <div class="field-sm"><label>Days in SG</label><div class="iw" style="width:100%"><input type="number" id="nr-days" value="60" min="1" max="365" style="padding-left:10px" oninput="calcNR()"></div></div>
+          </div>
+          <div class="drow"><span class="dlabel">Tax method</span><span class="dval" id="nr-method">—</span></div>
+          <div class="drow"><span class="dlabel">Rate applied</span><span class="dval gold" id="nr-rate">—</span></div>
+          <div class="drow"><span class="dlabel">Tax payable</span><span class="dval" style="color:var(--coral)" id="nr-tax">S$0</span></div>
+          <div style="margin-top:1rem;padding:.75rem 1rem;background:rgba(91,141,238,.06);border:1px solid rgba(91,141,238,.2);border-radius:8px;font-size:11px;color:var(--text2);line-height:1.6;font-family:var(--font-mono)" id="nr-note">Select income type and enter amount.</div>
+          <div style="margin-top:1rem">
+            <div class="drow"><span class="dlabel" style="font-size:11px">Employment ≤60 days</span><span class="dval teal" style="font-size:11px">Exempt</span></div>
+            <div class="drow"><span class="dlabel" style="font-size:11px">Employment 61–182 days</span><span class="dval" style="font-size:11px">15% or resident, higher</span></div>
+            <div class="drow"><span class="dlabel" style="font-size:11px">Employment >182 days</span><span class="dval" style="font-size:11px">Resident rates</span></div>
+            <div class="drow"><span class="dlabel" style="font-size:11px">Director / consultant fees</span><span class="dval" style="font-size:11px">24%</span></div>
+            <div class="drow"><span class="dlabel" style="font-size:11px">Interest / royalties</span><span class="dval" style="font-size:11px">15%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPORT TAB -->
+      <div id="lt-export" class="tpage">
+        <div class="panel-hdr">
+          <div class="panel-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div>
+          <div><div class="ptitle">Export</div><div class="psub">Download your computation</div></div>
+        </div>
+        <div class="panel-body">
+          <div class="drow"><span class="dlabel">Employment income</span><span class="dval" id="ex-emp">S$0</span></div>
+          <div class="drow"><span class="dlabel">Less: expenses</span><span class="dval green" id="ex-exp">−S$0</span></div>
+          <div class="drow"><span class="dlabel">Other income</span><span class="dval" id="ex-other">S$0</span></div>
+          <div class="drow"><span class="dlabel">Less: donations (×2.5)</span><span class="dval green" id="ex-don">−S$0</span></div>
+          <div class="drow"><span class="dlabel" style="font-weight:500">Assessable income</span><span class="dval gold" id="ex-assess">S$0</span></div>
+          <div class="drow"><span class="dlabel">Less: reliefs (capped S$80k)</span><span class="dval green" id="ex-rel">−S$0</span></div>
+          <div class="drow"><span class="dlabel" style="font-weight:500">Chargeable income</span><span class="dval gold" id="ex-charge">S$0</span></div>
+          <div class="drow"><span class="dlabel">Gross tax</span><span class="dval" id="ex-gross">S$0</span></div>
+          <div class="drow"><span class="dlabel">Less: PTR + rebates</span><span class="dval green" id="ex-reb">−S$0</span></div>
+          <div class="drow"><span class="dlabel" style="font-weight:500">Net tax payable</span><span class="dval" style="color:var(--blue)" id="ex-net">S$0</span></div>
+          <div class="drow"><span class="dlabel">Effective rate</span><span class="dval" id="ex-eff">0.0%</span></div>
+          <button class="ebtn ebtn-out" onclick="exportPDF()" style="margin-top:1.25rem">&#8659; Download PDF</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right">
+
+    <div class="metrics-row fi fi2">
+      <div class="mcard gold">
+        <div class="mlabel">Net Tax Payable</div>
+        <div class="mval" id="r-nettax">S$0</div>
+        <div class="msub">After all reliefs & rebates</div>
+      </div>
+      <div class="mcard teal">
+        <div class="mlabel">Total Reliefs</div>
+        <div class="mval" id="r-reliefs">S$0</div>
+        <div class="msub">Capped at S$80,000</div>
+      </div>
+      <div class="mcard blue">
+        <div class="mlabel">Effective Rate</div>
+        <div class="mval" id="r-effrate">0.0%</div>
+        <div class="msub">Tax ÷ total income</div>
+      </div>
+    </div>
+
+    <div class="apanel fi fi3">
+      <div class="aphdr">
+        <div>
+          <div class="aptitle">Tax Computation</div>
+          <div class="apsub">Full breakdown for YA2026</div>
+        </div>
+        <div class="abadge">YA2026</div>
+      </div>
+      <div class="two-col">
+        <div class="acol">
+          <div class="col-head">Summary</div>
+          <div class="drow"><span class="dlabel">Employment income</span><span class="dval" id="d-emp">S$0</span></div>
+          <div class="drow"><span class="dlabel">Net employment income</span><span class="dval gold" id="d-netemp">S$0</span></div>
+          <div class="drow"><span class="dlabel">Other income</span><span class="dval" id="d-other">S$0</span></div>
+          <div class="drow"><span class="dlabel">Less: donations (×2.5)</span><span class="dval green" id="d-don">−S$0</span></div>
+          <div class="drow"><span class="dlabel">Assessable income</span><span class="dval gold" id="d-assess">S$0</span></div>
+          <div class="drow"><span class="dlabel">Less: personal reliefs</span><span class="dval green" id="d-rel">−S$0</span></div>
+          <div class="drow"><span class="dlabel">Chargeable income</span><span class="dval gold" id="d-charge">S$0</span></div>
+          <div class="drow"><span class="dlabel">Gross tax</span><span class="dval" id="d-gross">S$0</span></div>
+          <div class="drow"><span class="dlabel">Less: PTR + rebates</span><span class="dval green" id="d-rebates">−S$0</span></div>
+          <div class="drow"><span class="dlabel" style="font-weight:500">Net tax payable</span><span class="dval" style="color:var(--blue);font-size:14px" id="d-net">S$0</span></div>
+        </div>
+        <div class="acol">
+          <div class="col-head">Key insights</div>
+          <div class="bcard cf">
+            <div class="btag">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+              Relief utilisation
+            </div>
+            <div class="btext" id="b-relief">Enter your income and reliefs to see optimisation tips.</div>
+          </div>
+          <div class="bcard ri">
+            <div class="btag">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+              Tax saving opportunities
+            </div>
+            <div class="btext" id="b-saving">Fill in your income first to see personalised saving recommendations.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btable-panel fi fi4">
+      <div class="btable-hdr">
+        <div class="btable-title">YA2026 Tax Brackets</div>
+        <div class="eff-row">
+          <span class="eff-label">Effective rate</span>
+          <span class="eff-val" id="br-effrate">0.0%</span>
+          <div class="eff-track"><div class="eff-fill" id="eff-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="wrap-overflow">
+        <table>
+          <thead><tr><th>Chargeable income</th><th>Rate</th><th>Cum. tax</th></tr></thead>
+          <tbody>
+            <tr id="br0"><td>First S$20,000</td><td>0%</td><td>S$0</td></tr>
+            <tr id="br1"><td>Next S$10,000</td><td>2%</td><td>S$200</td></tr>
+            <tr id="br2"><td>Next S$10,000</td><td>3.5%</td><td>S$550</td></tr>
+            <tr id="br3"><td>Next S$40,000</td><td>7%</td><td>S$3,350</td></tr>
+            <tr id="br4"><td>Next S$40,000</td><td>11.5%</td><td>S$7,950</td></tr>
+            <tr id="br5"><td>Next S$40,000</td><td>15%</td><td>S$13,950</td></tr>
+            <tr id="br6"><td>Next S$40,000</td><td>18%</td><td>S$21,150</td></tr>
+            <tr id="br7"><td>Next S$40,000</td><td>19%</td><td>S$28,750</td></tr>
+            <tr id="br8"><td>Next S$40,000</td><td>19.5%</td><td>S$36,550</td></tr>
+            <tr id="br9"><td>Next S$40,000</td><td>20%</td><td>S$44,550</td></tr>
+            <tr id="br10"><td>Next S$180,000</td><td>22%</td><td>S$84,150</td></tr>
+            <tr id="br11"><td>Next S$500,000</td><td>23%</td><td>S$199,150</td></tr>
+            <tr id="br12"><td>Above S$1,000,000</td><td>24%</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tip-bar" id="tip">Enter your income in the left panel to get started.</div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div class="footer">
+  <div style="max-width:680px;margin:0 auto 1.25rem;background:rgba(232,184,75,.05);border:1px solid var(--gold-dim);border-radius:10px;padding:1rem 1.25rem;text-align:left">
+    <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">Disclaimer</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.7;font-family:var(--font-body)">The figures generated by this tool are <strong style="color:var(--text)">estimates only</strong>, based solely on the information you have entered. They do not constitute tax advice and may not reflect your actual tax liability. Tax rules, reliefs, and rebates are subject to change and individual circumstances may vary. You are strongly encouraged to <strong style="color:var(--text)">verify all figures independently</strong> and consult a qualified tax advisor or refer directly to the Inland Revenue Authority of Singapore (<a href="https://www.iras.gov.sg" target="_blank" style="color:var(--gold)">iras.gov.sg</a>) before making any financial decisions. The creators of this tool accept no responsibility for errors, omissions, or outcomes arising from reliance on these estimates.</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem">
+    <div>
+      <div style="font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text);margin-bottom:3px">Made by Chloe Low</div>
+      <div style="font-size:12px;color:var(--text2);font-family:var(--font-body);line-height:1.6">Want a free consult? Drop me a DM and I’d be happy to help you plan your taxes.</div>
+    </div>
+    <div style="display:flex;gap:10px;flex-shrink:0">
+      <a href="https://instagram.com/chloelow_" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid var(--border2);border-radius:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);text-decoration:none;background:var(--bg3);transition:all .15s" onmouseover="this.style.borderColor='#e8b84b';this.style.color='#e8b84b'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        @chloelow_
+      </a>
+      <a href="https://t.me/chloelsy" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid var(--gold-dim);border-radius:8px;font-size:12px;font-family:var(--font-mono);color:var(--gold);text-decoration:none;background:rgba(232,184,75,.08);transition:all .15s" onmouseover="this.style.background='rgba(232,184,75,.18)'" onmouseout="this.style.background='rgba(232,184,75,.08)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L3 10.5l6.5 2L17 7l-5 7 .5 5L15 16l4 3 2-16z"/></svg>
+        Free consult @chloelsy
+      </a>
+    </div>
+  </div>
+  <div style="color:var(--text3);font-size:11px">Singapore Tax Planner · YA2026 · <a href="https://www.iras.gov.sg" target="_blank" style="color:var(--text3)">iras.gov.sg</a></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const BRACKETS=[{limit:20000,rate:0},{limit:10000,rate:.02},{limit:10000,rate:.035},{limit:40000,rate:.07},{limit:40000,rate:.115},{limit:40000,rate:.15},{limit:40000,rate:.18},{limit:40000,rate:.19},{limit:40000,rate:.195},{limit:40000,rate:.20},{limit:180000,rate:.22},{limit:500000,rate:.23},{limit:Infinity,rate:.24}];
+const CPF_SC={35:{ee:.20,er:.17},45:{ee:.20,er:.17},50:{ee:.20,er:.17},55:{ee:.20,er:.17},60:{ee:.14,er:.13},65:{ee:.095,er:.09},70:{ee:.07,er:.075},99:{ee:.05,er:.05}};
+const CPF_PR2={35:{ee:.15,er:.13},45:{ee:.15,er:.13},50:{ee:.15,er:.13},55:{ee:.135,er:.10},60:{ee:.09,er:.085},65:{ee:.065,er:.065},70:{ee:.05,er:.055},99:{ee:.035,er:.04}};
+const CPF_PR1={35:{ee:.05,er:.04},45:{ee:.05,er:.04},50:{ee:.05,er:.04},55:{ee:.05,er:.04},60:{ee:.04,er:.035},65:{ee:.03,er:.03},70:{ee:.025,er:.03},99:{ee:.015,er:.025}};
+const RELIEFS=[
+  {id:'earned',label:'Earned income relief',hint:'Auto-filled from age · S$1,000 (under 55) · S$6,000 (55–59) · S$8,000 (60+)',max:8000},
+  {id:'spouse',label:'Spouse / handicapped spouse relief',hint:'S$2,000 or S$5,500 if handicapped',max:5500},
+  {id:'child',label:'Qualifying child relief (QCR)',hint:'S$4,000 per child; S$7,500 if handicapped',max:null},
+  {id:'wmcr',label:"Working mother's child relief",hint:"15–25% of mother's earned income per child",max:null},
+  {id:'parent',label:'Parent / handicapped parent relief',hint:'S$9,000–S$14,000 per parent',max:14000},
+  {id:'grandparent',label:'Grandparent caregiver relief',hint:'S$3,000 if grandparent cares for your child',max:3000},
+  {id:'sibling',label:'Sibling disability relief',hint:'S$5,500 per handicapped sibling',max:5500},
+  {id:'cpf',label:'CPF / provident fund relief',hint:'Employee CPF contributions — see CPF tab',max:null},
+  {id:'lifeins',label:'Life insurance relief',hint:'Up to S$5,000 if CPF contributions < S$5,000',max:5000},
+  {id:'cpftopup',label:'CPF cash top-up relief',hint:'Up to S$8,000 self + S$8,000 family per year',max:16000},
+  {id:'srs',label:'SRS relief',hint:'Up to S$15,300/yr — dollar-for-dollar reduction',max:15300},
+  {id:'nsman',label:'NSman (self / wife / parent) relief',hint:'S$1,500–3,000 NSman; S$750 wife/parent',max:3000},
+];
+
+let S={assessable:0,chargeable:0,grossTax:0,netTax:0,totalInc:0,effRate:0,reliefs:0,donDed:0,netEmp:0,otherInc:0,rebatesTotal:0,exp:0,emp:0,don:0,reliefRaw:0,marginalRate:0};
+let nrMode='employment';
+
+function v(id){return parseFloat(document.getElementById(id).value)||0}
+function fmt(n){return'S$'+Math.round(n).toLocaleString()}
+function pct(n){return(n*100).toFixed(1)+'%'}
+
+function calcTax(income){
+  if(income<=0)return{tax:0,bIdx:-1};
+  let rem=income,tax=0,bIdx=0;
+  for(let i=0;i<BRACKETS.length;i++){let chunk=Math.min(rem,BRACKETS[i].limit);tax+=chunk*BRACKETS[i].rate;rem-=chunk;bIdx=i;if(rem<=0)break;}
+  return{tax,bIdx};
+}
+function marginal(c){let rem=c,r=0;for(let i=0;i<BRACKETS.length;i++){if(rem<=0)break;rem-=Math.min(rem,BRACKETS[i].limit);r=BRACKETS[i].rate;}return r;}
+
+function buildReliefs(){
+  document.getElementById('reliefs-section').innerHTML=RELIEFS.map(r=>`
+    <div class="rrow">
+      <div><div class="rlabel">${r.label}</div><div class="rhint">${r.hint}</div></div>
+      <span class="sbadge none" id="sb-${r.id}">—</span>
+      <div class="iw"><span class="ipre">S$</span><input type="number" id="${r.id}" value="0" min="0" oninput="calc()"></div>
+    </div>`).join('');
+}
+
+function applyEarnedRelief(){
+  const age=parseInt(document.getElementById('age').value)||0;
+  const earnedEl=document.getElementById('earned');
+  if(age<=0){earnedEl.value=0;calc();return;}
+  let relief=1000;
+  if(age>=60)relief=8000;
+  else if(age>=55)relief=6000;
+  earnedEl.value=relief;
+  calc();
+}
+
+function applyGenderLogic(){
+  const gender=document.getElementById('gender').value;
+  const kidsSection=document.getElementById('kids-section');
+  kidsSection.style.display=gender==='female'?'block':'none';
+  if(gender!=='female'){
+    document.getElementById('wmcr').value=0;
+    document.getElementById('num-kids').value=0;
+  }
+  calc();
+}
+
+function buildKidsForm(){
+  const kids=parseInt(document.getElementById('num-kids').value)||0;
+  const form=document.getElementById('kids-form');
+  const ordinals=['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
+  if(kids===0){form.innerHTML='';document.getElementById('wmcr').value=0;document.getElementById('wmcr-note').textContent='Enter number of children above to continue.';calc();return;}
+  let html='';
+  for(let i=0;i<kids;i++){
+    html+=`<div style="padding:7px 0;border-bottom:1px solid rgba(42,58,78,.5)">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:5px">${ordinals[i]||((i+1)+'th')} child — born/adopted</div>
+      <div style="display:flex;gap:8px">
+        <label style="flex:1;display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:12px;color:var(--text2);background:var(--bg3)" id="lbl-after-${i}">
+          <input type="radio" name="child-dob-${i}" value="after" onchange="applyWMCR()" style="accent-color:var(--gold)"> On/after 1 Jan 2024
+        </label>
+        <label style="flex:1;display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:12px;color:var(--text2);background:var(--bg3)" id="lbl-before-${i}">
+          <input type="radio" name="child-dob-${i}" value="before" onchange="applyWMCR()" style="accent-color:var(--gold)"> Before 1 Jan 2024
+        </label>
+      </div>
+    </div>`;
+  }
+  form.innerHTML=html;
+  applyWMCR();
+}
+
+function applyWMCR(){
+  const gender=document.getElementById('gender').value;
+  if(gender!=='female'){calc();return;}
+  const kids=parseInt(document.getElementById('num-kids').value)||0;
+  const emp=v('employment');
+  if(kids===0){document.getElementById('wmcr').value=0;document.getElementById('wmcr-note').textContent='Enter number of children above to continue.';calc();return;}
+
+  // Check all children have a selection
+  let allSelected=true;
+  for(let i=0;i<kids;i++){
+    const sel=document.querySelector(`input[name="child-dob-${i}"]:checked`);
+    if(!sel){allSelected=false;break;}
+  }
+  if(!allSelected){
+    document.getElementById('wmcr-note').textContent='Please select the birth/adoption date for each child above.';
+    document.getElementById('wmcr').value=0;
+    calc();return;
+  }
+  if(emp===0){
+    document.getElementById('wmcr-note').textContent='Enter your employment income to compute WMCR.';
+    document.getElementById('wmcr').value=0;
+    calc();return;
+  }
+
+  // Fixed amounts for on/after 1 Jan 2024: 1st $8k, 2nd $10k, 3rd+ $12k
+  const fixedAmounts=[8000,10000,12000];
+  // Percentage rates for before 1 Jan 2024: 1st 15%, 2nd 20%, 3rd+ 25%
+  const pctRates=[0.15,0.20,0.25];
+
+  let totalWMCR=0;
+  const lines=[];
+  for(let i=0;i<kids;i++){
+    const dob=document.querySelector(`input[name="child-dob-${i}"]:checked`).value;
+    const ordinals=['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
+    const ord=ordinals[i]||((i+1)+'th');
+    if(dob==='after'){
+      const fixed=fixedAmounts[Math.min(i,2)];
+      totalWMCR+=fixed;
+      lines.push(ord+' child (post-2024): '+fmt(fixed));
+    } else {
+      const rate=pctRates[Math.min(i,2)];
+      const amt=emp*rate;
+      totalWMCR+=amt;
+      lines.push(ord+' child (pre-2024): '+(rate*100)+'% of '+fmt(emp)+' = '+fmt(amt));
+    }
+  }
+  // Cap at earned income for percentage-based, overall note
+  const finalWMCR=Math.min(totalWMCR,emp);
+  document.getElementById('wmcr').value=Math.round(finalWMCR);
+  const capNote=finalWMCR<totalWMCR?' (capped at earned income)':'';
+  document.getElementById('wmcr-note').textContent=lines.join(' | ')+' → Total WMCR: '+fmt(finalWMCR)+capNote;
+  calc();
+}
+
+function calc(){
+  const emp=v('employment'),exp=Math.min(v('expenses'),emp),netEmp=Math.max(0,emp-exp);
+  const otherInc=v('trade')+v('dividends')+v('interest')+v('rental')+v('other');
+  const totalInc=netEmp+otherInc;
+  const don=v('donations'),donDed=Math.min(don*2.5,totalInc);
+  const assessable=Math.max(0,totalInc-donDed);
+  const reliefRaw=RELIEFS.reduce((s,r)=>s+v(r.id),0);
+  const reliefs=Math.min(reliefRaw,80000);
+  const chargeable=Math.max(0,assessable-reliefs);
+  const{tax:grossTax,bIdx}=calcTax(chargeable);
+  const ptrAmt=Math.min(v('ptr'),grossTax);
+  const rebateAmt=Math.min(v('rebate'),Math.max(0,grossTax-ptrAmt));
+  const netTax=Math.max(0,grossTax-ptrAmt-rebateAmt);
+  const effRate=totalInc>0?netTax/totalInc:0;
+  const rebatesTotal=ptrAmt+rebateAmt;
+  const mr=marginal(chargeable);
+  S={assessable,chargeable,grossTax,netTax,totalInc,effRate,reliefs,donDed,netEmp,otherInc,rebatesTotal,exp,emp,don,reliefRaw,marginalRate:mr};
+
+  // metrics
+  document.getElementById('r-nettax').textContent=fmt(netTax);
+  document.getElementById('r-reliefs').textContent=fmt(reliefs);
+  document.getElementById('r-effrate').textContent=pct(effRate);
+  document.getElementById('br-effrate').textContent=pct(effRate);
+  document.getElementById('eff-bar').style.width=Math.min(effRate/0.24*100,100)+'%';
+  document.getElementById('don-save').textContent=fmt(donDed);
+
+  // computation summary
+  document.getElementById('d-emp').textContent=fmt(emp);
+  document.getElementById('d-netemp').textContent=fmt(netEmp);
+  document.getElementById('d-other').textContent=fmt(otherInc);
+  document.getElementById('d-don').textContent='−'+fmt(donDed);
+  document.getElementById('d-assess').textContent=fmt(assessable);
+  document.getElementById('d-rel').textContent='−'+fmt(reliefs);
+  document.getElementById('d-charge').textContent=fmt(chargeable);
+  document.getElementById('d-gross').textContent=fmt(grossTax);
+  document.getElementById('d-rebates').textContent='−'+fmt(rebatesTotal);
+  document.getElementById('d-net').textContent=fmt(netTax);
+
+  // cap bar
+  const capPct=Math.min(reliefRaw/80000,1);
+  const fill=document.getElementById('cap-fill');
+  fill.style.width=(capPct*100)+'%';
+  fill.className='cap-fill'+(capPct>=1?' over':capPct>=.8?' warn':'');
+  const capLabel=document.getElementById('cap-val-label');
+  capLabel.textContent=fmt(Math.min(reliefRaw,80000))+' / S$80k';
+  capLabel.className='cap-val'+(capPct>=1?' over':capPct>=.8?' warn':'');
+  document.getElementById('cap-pct-label').textContent=Math.round(capPct*100)+'%';
+
+  // brackets
+  for(let i=0;i<13;i++)document.getElementById('br'+i).className=i===bIdx&&chargeable>0?'active-bracket':'';
+
+  // relief badges
+  const capRoom=Math.max(0,80000-reliefRaw);
+  RELIEFS.forEach(r=>{
+    const cur=v(r.id),el=document.getElementById('sb-'+r.id);
+    if(r.max&&cur<r.max&&mr>0&&capRoom>0){
+      const sav=Math.min(r.max-cur,capRoom)*mr;
+      el.textContent='save '+fmt(sav);el.className='sbadge save';
+    } else if(r.max&&cur>=r.max){el.textContent='maxed';el.className='sbadge maxed';}
+    else if(!r.max&&cur>0){el.textContent='active';el.className='sbadge maxed';}
+    else{el.textContent='—';el.className='sbadge none';}
+  });
+
+  // insights
+  let reliefTxt='',savingTxt='';
+  if(totalInc===0){reliefTxt='Enter income to see relief utilisation.';savingTxt='Enter income to see saving opportunities.';}
+  else{
+    const unused=80000-reliefRaw;
+    if(reliefRaw>80000)reliefTxt='Relief cap exceeded by '+fmt(reliefRaw-80000)+'. '+fmt(reliefRaw-80000)+' of reliefs cannot be applied.';
+    else if(reliefRaw===0)reliefTxt='No reliefs entered yet. You have the full S$80,000 cap available.';
+    else reliefTxt='Using '+fmt(reliefs)+' of S$80,000 cap ('+(capPct*100).toFixed(0)+'%). '+(unused>0?fmt(unused)+' headroom remaining.':'Cap fully utilised.');
+    const srsRoom=Math.max(0,15300-v('srs')),cpfRoom=Math.max(0,16000-v('cpftopup'));
+    const tips=[];
+    if(srsRoom>0){
+      const hypotheticalChargeable=Math.max(0,chargeable-Math.min(srsRoom,capRoom));
+      const srsMr=marginal(Math.max(chargeable,1));
+      const srsSaving=Math.min(srsRoom,capRoom)*srsMr;
+      if(srsMr>0&&srsSaving>0){
+        if(srsSaving>1000)tips.push('Topping up SRS by '+fmt(srsRoom)+' could save '+fmt(srsSaving)+' in tax — saving exceeds S$1,000, so the top-up is likely worth doing');
+        else tips.push('SRS top-up available: save up to '+fmt(srsSaving)+' (top-up '+fmt(srsRoom)+')');
+      }
+    }
+    if(cpfRoom>0&&mr>0)tips.push('CPF cash top-up: save up to '+fmt(Math.min(cpfRoom,capRoom)*mr));
+    if(don===0&&totalInc>0)tips.push('Approved donations give 2.5× deduction');
+    savingTxt=tips.length>0?tips.join(' · '):netTax===0?'No tax payable — well optimised!':'You appear to be well optimised for your income level.';
+  }
+  document.getElementById('b-relief').textContent=reliefTxt;
+  document.getElementById('b-saving').textContent=savingTxt;
+
+  // tip bar
+  let tip='';
+  if(totalInc===0)tip='Enter your income in the left panel to get started.';
+  else if(reliefRaw>80000)tip='Relief cap exceeded — '+fmt(reliefRaw-80000)+' of reliefs are above the S$80,000 limit and not deductible.';
+  else if(netTax===0&&grossTax>0)tip='Rebates fully offset your gross tax — net payable is S$0.';
+  else if(chargeable<=20000)tip='Chargeable income is within the 0% band — no income tax payable.';
+  else tip='Your active bracket is highlighted. Effective rate '+pct(effRate)+'. Green badges show potential tax savings per relief field.';
+  document.getElementById('tip').textContent=tip;
+
+  updateExport();
+}
+
+function calcCPF(){
+  const monthly=Math.min(v('cpf-salary'),7400);
+  const age=parseInt(document.getElementById('cpf-age').value);
+  const cit=document.getElementById('cpf-citizen').value;
+  let rates=CPF_SC[age];
+  if(cit==='pr2')rates=CPF_PR2[age];
+  if(cit==='pr1')rates=CPF_PR1[age];
+  const eeM=monthly*rates.ee,erM=monthly*rates.er,annEE=eeM*12;
+  document.getElementById('cpf-ee-r').textContent=Math.round(rates.ee*100)+'%';
+  document.getElementById('cpf-er-r').textContent=Math.round(rates.er*100)+'%';
+  document.getElementById('cpf-ee-mo').textContent=fmt(eeM)+'/mo';
+  document.getElementById('cpf-er-mo').textContent=fmt(erM)+'/mo';
+  document.getElementById('cpf-ann').textContent=fmt(annEE);
+  document.getElementById('cpf-tip').textContent=(v('cpf-salary')>7400?'Salary capped at OW ceiling of S$7,400/month. ':'')+'Annual employee contribution: '+fmt(annEE)+'. Copy this to "CPF / provident fund relief" in the Calculator tab.';
+}
+
+function setNR(m){
+  nrMode=m;
+  document.getElementById('nr-emp-btn').className='nr-btn'+(m==='employment'?' on':'');
+  document.getElementById('nr-dir-btn').className='nr-btn'+(m==='director'?' on':'');
+  document.getElementById('nr-oth-btn').className='nr-btn'+(m==='other'?' on':'');
+  calcNR();
+}
+function calcNR(){
+  const income=v('nr-income'),days=v('nr-days');
+  let method='',rate=0,tax=0,note='';
+  if(nrMode==='employment'){
+    if(days<=60){method='Exempt';rate=0;tax=0;note='Employment ≤60 days in calendar year is exempt from Singapore tax for non-residents.';}
+    else if(days<=182){const r15=income*0.15;const{tax:rt}=calcTax(income);if(r15>=rt){method='15% flat';rate=0.15;tax=r15;note='Higher of 15% flat or resident rates — 15% flat applies here. No personal reliefs.';}else{method='Resident rates';rate=income>0?rt/income:0;tax=rt;note='Higher of 15% or resident rates — resident rates are higher here. No personal reliefs.';}}
+    else{const{tax:rt}=calcTax(income);method='Resident rates';rate=income>0?rt/income:0;tax=rt;note='>182 days in Singapore — taxed at resident rates without personal reliefs. May apply to IRAS for resident treatment.';}
+  }else if(nrMode==='director'){method='24% flat';rate=0.24;tax=income*0.24;note='Director fees, consultant fees and management fees paid to non-residents: 24% withholding tax.';}
+  else{method='24% flat';rate=0.24;tax=income*0.24;note='Other income (royalties, rent, gains) for non-residents: generally 24% withholding tax.';}
+  document.getElementById('nr-method').textContent=method||'—';
+  document.getElementById('nr-rate').textContent=income>0?(rate*100).toFixed(1)+'%':'—';
+  document.getElementById('nr-tax').textContent=fmt(tax);
+  document.getElementById('nr-note').textContent=note||'Enter income and days above.';
+}
+
+function updateExport(){
+  document.getElementById('ex-emp').textContent=fmt(S.emp);
+  document.getElementById('ex-exp').textContent='−'+fmt(S.exp);
+  document.getElementById('ex-other').textContent=fmt(S.otherInc);
+  document.getElementById('ex-don').textContent='−'+fmt(S.donDed);
+  document.getElementById('ex-assess').textContent=fmt(S.assessable);
+  document.getElementById('ex-rel').textContent='−'+fmt(S.reliefs);
+  document.getElementById('ex-charge').textContent=fmt(S.chargeable);
+  document.getElementById('ex-gross').textContent=fmt(S.grossTax);
+  document.getElementById('ex-reb').textContent='−'+fmt(S.rebatesTotal);
+  document.getElementById('ex-net').textContent=fmt(S.netTax);
+  document.getElementById('ex-eff').textContent=(S.effRate*100).toFixed(2)+'%';
+}
+
+function exportPDF(){
+  const{jsPDF}=window.jspdf;
+  if(!jsPDF){alert('PDF library loading, please try again.');return;}
+  const doc=new jsPDF();
+  doc.setFont('helvetica','bold');doc.setFontSize(16);
+  doc.text('Singapore Income Tax Computation',105,20,{align:'center'});
+  doc.setFontSize(10);doc.setFont('helvetica','normal');
+  doc.text('Year of Assessment 2026  |  Income year: 1 Jan – 31 Dec 2025',105,28,{align:'center'});
+  doc.setDrawColor(180);doc.line(20,33,190,33);
+  const rows=[['Employment income',fmt(S.emp)],['Less: employment expenses','−'+fmt(S.exp)],['Other income',fmt(S.otherInc)],['Less: approved donations (×2.5)','−'+fmt(S.donDed)],['ASSESSABLE INCOME',fmt(S.assessable)],['Less: personal reliefs (capped S$80,000)','−'+fmt(S.reliefs)],['CHARGEABLE INCOME',fmt(S.chargeable)],['Gross tax on chargeable income',fmt(S.grossTax)],['Less: rebates & PTR','−'+fmt(S.rebatesTotal)],['NET TAX PAYABLE',fmt(S.netTax)],['Effective tax rate',(S.effRate*100).toFixed(2)+'%']];
+  let y=42;const bold=['ASSESSABLE INCOME','CHARGEABLE INCOME','NET TAX PAYABLE'];
+  rows.forEach(([l,val])=>{doc.setFont('helvetica',bold.includes(l)?'bold':'normal');doc.text(l,22,y);doc.text(val,188,y,{align:'right'});y+=9;if(bold.includes(l)){doc.setDrawColor(210);doc.line(20,y-4,190,y-4);}});
+  doc.setFont('helvetica','italic');doc.setFontSize(9);
+  doc.text('For reference only. Verify with IRAS (iras.gov.sg) or a licensed tax advisor.',105,285,{align:'center'});
+  doc.save('SG-Tax-YA2026.pdf');
+}
+
+function switchLeft(t,btn){
+  document.querySelectorAll('.tpage').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('lt-'+t).classList.add('active');
+  btn.classList.add('active');
+}
+
+buildReliefs();calc();calcCPF();calcNR();
+</script>
+</body>
+</html>
