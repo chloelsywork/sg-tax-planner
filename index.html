@@ -307,7 +307,7 @@ td.g{color:var(--gold)}td.t{color:var(--teal)}
       <div id="lt-cpf" class="tpage">
         <div class="panel-hdr">
           <div class="panel-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
-          <div><div class="ptitle">CPF Contributions</div><div class="psub">Rates for SC and PRs</div></div>
+          <div><div class="ptitle">CPF Contributions</div><div class="psub">Rates for SC and PRs · OW ceiling S$8,000/month</div></div>
         </div>
         <div class="panel-body">
           <div class="grid3">
@@ -323,7 +323,7 @@ td.g{color:var(--gold)}td.t{color:var(--teal)}
             <div class="drow"><span class="dlabel">Annual employee contribution</span><span class="dval teal" id="cpf-ann">S$0</span></div>
           </div>
           <div style="margin-top:1rem;padding:.75rem 1rem;background:rgba(232,184,75,.07);border:1px solid var(--gold-dim);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.6" id="cpf-tip">
-            OW ceiling: S$7,400/month. Enter the annual employee contribution as CPF relief in the Calculator tab.
+            OW ceiling: S$8,000/month (effective 1 Jan 2026). Enter the annual employee contribution as CPF relief in the Calculator tab.
           </div>
         </div>
       </div>
@@ -750,7 +750,7 @@ function calc(){
 }
 
 function calcCPF(){
-  const monthly=Math.min(v('cpf-salary'),7400);
+  const monthly=Math.min(v('cpf-salary'),8000);
   const age=parseInt(document.getElementById('cpf-age').value);
   const cit=document.getElementById('cpf-citizen').value;
   let rates=CPF_SC[age];
@@ -762,7 +762,7 @@ function calcCPF(){
   document.getElementById('cpf-ee-mo').textContent=fmt(eeM)+'/mo';
   document.getElementById('cpf-er-mo').textContent=fmt(erM)+'/mo';
   document.getElementById('cpf-ann').textContent=fmt(annEE);
-  document.getElementById('cpf-tip').textContent=(v('cpf-salary')>7400?'Salary capped at OW ceiling of S$7,400/month. ':'')+'Annual employee contribution: '+fmt(annEE)+'. Copy this to "CPF / provident fund relief" in the Calculator tab.';
+  document.getElementById('cpf-tip').textContent=(v('cpf-salary')>8000?'Salary capped at OW ceiling of S$8,000/month (effective 1 Jan 2026). ':'')+'Annual employee contribution: '+fmt(annEE)+'. Copy this to "CPF / provident fund relief" in the Calculator tab.';
 }
 
 function setNR(m){
