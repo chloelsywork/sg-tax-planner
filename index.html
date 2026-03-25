@@ -246,8 +246,18 @@ td.g{color:var(--gold)}td.t{color:var(--teal)}
           </div>
           <div class="sec-label">Income</div>
           <div class="irow">
-            <div><div class="irow-label">Employment income</div></div>
+            <div>
+              <div class="irow-label">Employment income</div>
+              <div class="irow-sub">Enter your <strong style="color:var(--gold)">gross salary before CPF deductions</strong> — i.e. the full amount before your employee CPF is taken out. Includes salary, bonuses, commissions &amp; allowances.</div>
+            </div>
             <div class="iw"><span class="ipre">S$</span><input type="number" id="employment" value="0" min="0" oninput="applyWMCR()"></div>
+          </div>
+          <div class="irow">
+            <div>
+              <div class="irow-label">Voluntary employer CPF (excess)</div>
+              <div class="irow-sub">Taxable: employer CPF above compulsory amount · added to income</div>
+            </div>
+            <div class="iw"><span class="ipre">S$</span><input type="number" id="vol-cpf" value="0" min="0" oninput="calc()"></div>
           </div>
           <div class="irow">
             <div><div class="irow-label" style="color:var(--text2)">Employment expenses</div></div>
@@ -518,8 +528,8 @@ const RELIEFS=[
   {id:'parent',label:'Parent / handicapped parent relief',hint:'S$9,000–S$14,000 per parent',max:14000},
   {id:'grandparent',label:'Grandparent caregiver relief',hint:'S$3,000 if grandparent cares for your child',max:3000},
   {id:'sibling',label:'Sibling disability relief',hint:'S$5,500 per handicapped sibling',max:5500},
-  {id:'cpf',label:'CPF / provident fund relief',hint:'Employee CPF contributions — see CPF tab',max:null},
-  {id:'lifeins',label:'Life insurance relief',hint:'Up to S$5,000 if CPF contributions < S$5,000',max:5000},
+  {id:'cpf',label:'CPF / provident fund relief',hint:'Your employee CPF contributions (not employer). Use the CPF tab to calculate, or click Auto-fill.',max:null},
+  {id:'lifeins',label:'Life insurance relief',hint:'Only claimable if your CPF contributions are below S$5,000. Auto-disabled when CPF relief ≥ S$5,000.',max:5000},
   {id:'cpftopup',label:'CPF cash top-up relief',hint:'Up to S$8,000 self + S$8,000 family per year',max:16000},
   {id:'srs',label:'SRS relief',hint:'Up to S$15,300/yr — dollar-for-dollar reduction',max:15300},
   {id:'nsman',label:'NSman (self / wife / parent) relief',hint:'S$1,500–3,000 NSman; S$750 wife/parent',max:3000},
@@ -543,10 +553,27 @@ function marginal(c){let rem=c,r=0;for(let i=0;i<BRACKETS.length;i++){if(rem<=0)
 function buildReliefs(){
   document.getElementById('reliefs-section').innerHTML=RELIEFS.map(r=>`
     <div class="rrow">
-      <div><div class="rlabel">${r.label}</div><div class="rhint">${r.hint}</div></div>
+      <div><div class="rlabel">${r.label}</div><div class="rhint">${r.hint}${r.id==='cpf'?' <span onclick="autoFillCPF()" style="color:var(--gold);cursor:pointer;text-decoration:underline;font-size:10px">Auto-fill from CPF tab</span>':''}</div></div>
       <span class="sbadge none" id="sb-${r.id}">—</span>
       <div class="iw"><span class="ipre">S$</span><input type="number" id="${r.id}" value="0" min="0" oninput="calc()"></div>
     </div>`).join('');
+}
+
+function autoFillCPF(){
+  const monthly=Math.min(v('cpf-salary'),8000);
+  const age=parseInt(document.getElementById('cpf-age').value);
+  const cit=document.getElementById('cpf-citizen').value;
+  let rates={ee:.20,er:.17};
+  const CPF_SC_local={35:{ee:.20,er:.17},45:{ee:.20,er:.17},50:{ee:.20,er:.17},55:{ee:.20,er:.17},60:{ee:.14,er:.13},65:{ee:.095,er:.09},70:{ee:.07,er:.075},99:{ee:.05,er:.05}};
+  const CPF_PR2_local={35:{ee:.15,er:.13},45:{ee:.15,er:.13},50:{ee:.15,er:.13},55:{ee:.135,er:.10},60:{ee:.09,er:.085},65:{ee:.065,er:.065},70:{ee:.05,er:.055},99:{ee:.035,er:.04}};
+  const CPF_PR1_local={35:{ee:.05,er:.04},45:{ee:.05,er:.04},50:{ee:.05,er:.04},55:{ee:.05,er:.04},60:{ee:.04,er:.035},65:{ee:.03,er:.03},70:{ee:.025,er:.03},99:{ee:.015,er:.025}};
+  if(cit==='pr2')rates=CPF_PR2_local[age];
+  else if(cit==='pr1')rates=CPF_PR1_local[age];
+  else rates=CPF_SC_local[age];
+  const annualEE=Math.round(monthly*rates.ee*12);
+  if(monthly===0){alert('Please enter your monthly salary in the CPF tab first.');return;}
+  document.getElementById('cpf').value=annualEE;
+  calc();
 }
 
 function applyEarnedRelief(){
@@ -649,7 +676,7 @@ function applyWMCR(){
 }
 
 function calc(){
-  const emp=v('employment'),exp=Math.min(v('expenses'),emp),netEmp=Math.max(0,emp-exp);
+  const emp=v('employment')+v('vol-cpf'),exp=Math.min(v('expenses'),v('employment')),netEmp=Math.max(0,emp-exp);
   const otherInc=v('trade')+v('dividends')+v('interest')+v('rental')+v('other');
   const totalInc=netEmp+otherInc;
   const don=v('donations'),donDed=Math.min(don*2.5,totalInc);
@@ -675,7 +702,7 @@ function calc(){
   document.getElementById('don-save').textContent=fmt(donDed);
 
   // computation summary
-  document.getElementById('d-emp').textContent=fmt(emp);
+  document.getElementById('d-emp').textContent=fmt(v('employment'))+(v('vol-cpf')>0?' + '+fmt(v('vol-cpf'))+' (vol. CPF)':'');
   document.getElementById('d-netemp').textContent=fmt(netEmp);
   document.getElementById('d-other').textContent=fmt(otherInc);
   document.getElementById('d-don').textContent='−'+fmt(donDed);
@@ -710,6 +737,23 @@ function calc(){
     else if(!r.max&&cur>0){el.textContent='active';el.className='sbadge maxed';}
     else{el.textContent='—';el.className='sbadge none';}
   });
+
+  // Disable life insurance relief if CPF contributions >= $5,000
+  const cpfVal=v('cpf');
+  const lifeInsInput=document.getElementById('lifeins');
+  const lifeInsRow=lifeInsInput.closest('.rrow');
+  if(cpfVal>=5000){
+    lifeInsInput.disabled=true;
+    lifeInsInput.value=0;
+    lifeInsInput.style.opacity='0.4';
+    lifeInsRow.style.opacity='0.5';
+    document.getElementById('sb-lifeins').textContent='not eligible';
+    document.getElementById('sb-lifeins').className='sbadge none';
+  } else {
+    lifeInsInput.disabled=false;
+    lifeInsInput.style.opacity='1';
+    lifeInsRow.style.opacity='1';
+  }
 
   // insights
   let reliefTxt='',savingTxt='';
@@ -862,7 +906,8 @@ function exportPDF(){
 
   // INCOME
   sectionHead('Income');
-  row('Employment income',fmtPDF(S.emp));
+  row('Employment income',fmtPDF(v('employment')));
+  if(v('vol-cpf')>0)row('Add: voluntary employer CPF (taxable)',fmtPDF(v('vol-cpf')));
   if(S.exp>0)row('Less: employment expenses',deduct(S.exp),{muted:true});
   row('Net employment income',fmtPDF(S.netEmp));
   if(S.otherInc>0)row('Other income',fmtPDF(S.otherInc));
